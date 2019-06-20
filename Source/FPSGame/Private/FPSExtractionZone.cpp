@@ -6,6 +6,7 @@
 #include "FPSCharacter.h"
 #include "Engine/World.h"
 #include "FPSGameMode.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -35,28 +36,39 @@ AFPSExtractionZone::AFPSExtractionZone()
 	DecalComponent->SetupAttachment(RootComponent);
 }
 
-
+/** What happens when an actor overlaps the OverlapComponent */
 void AFPSExtractionZone::HandleOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	UE_LOG(LogTemp, Log, TEXT("Overlapped with extraction zone!"));
-
 	/**
 	 * Cast Extraction Zone to FPSCharacter
-	 * check if MyPawn is null and if its carrying objective
+	 * Return if MyPawn is null
 	 */
 	AFPSCharacter* MyPawn = Cast<AFPSCharacter>(OtherActor);
 
-	if (MyPawn && MyPawn->bIsCarryingObjective)
+	if (MyPawn == nullptr)
 	{
-		/**
-		 * Cast AuthGameMode to FPSGameMode (GetAuthGameMode returns the current GameMode instance, which is always valid during gameplay on the server. GetAuthGameMode is only valid when called in a server; returns null when called on a client).
-		 * Check for the nullability of GameMode and call the CompleteMission function.
-		 */
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("Overlapped with extraction zone!"));
+
+	/**
+	* If MyPawn is carrying objective;
+	* Cast AuthGameMode to FPSGameMode (GetAuthGameMode returns the current GameMode instance, which is always valid during gameplay on the server. GetAuthGameMode is only valid when called in a server; returns null when called on a client).
+	* Check for the nullability of GameMode and call the CompleteMission function.
+	*/
+	if (MyPawn->bIsCarryingObjective)
+	{
 		AFPSGameMode* GameMode = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
 		if (GameMode)
 		{
 			GameMode->CompleteMission(MyPawn);
 		}
+	}
+	else
+		/** Objective is missing; Play Objective missing sound */
+	{
+		UGameplayStatics::PlaySound2D(this, ObjectiveMissingSound);
 	}
 }
 
