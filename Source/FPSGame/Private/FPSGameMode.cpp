@@ -14,3 +14,16 @@ AFPSGameMode::AFPSGameMode()
 	// use our custom HUD class
 	HUDClass = AFPSHUD::StaticClass();
 }
+
+/** Disables input for any player that completes the mission */
+void AFPSGameMode::CompleteMission(APawn* InstigatorPawn)
+{
+	if (InstigatorPawn)
+	{
+		InstigatorPawn->DisableInput(nullptr);
+	}
+
+	/** Blueprint Implemented function */
+	OnMissionCompleted(InstigatorPawn);
+}
+
