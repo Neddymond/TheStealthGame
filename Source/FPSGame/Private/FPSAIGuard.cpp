@@ -20,6 +20,8 @@ void AFPSAIGuard::BeginPlay()
 {
 	Super::BeginPlay();
 
+	OriginalRotation = GetActorRotation();
+
 	/** Bind to Events */
 	PawnSensingComponent->OnSeePawn.AddDynamic(this, &AFPSAIGuard::OnPawnSeen);
 	PawnSensingComponent->OnHearNoise.AddDynamic(this, &AFPSAIGuard::OnNoiseHeard);
@@ -43,6 +45,33 @@ void AFPSAIGuard::OnPawnSeen(APawn* SeenPawn)
 void AFPSAIGuard::OnNoiseHeard(APawn* Noiseinstigator, const FVector& Location, float Volume)
 {
 	DrawDebugSphere(GetWorld(), Location, 32.f, 12, FColor::Green, false, 10.f);
+
+	/** convert from vector to direction (The direction the AIGuard is meant to look at) */
+	FVector Direction = Location - GetActorLocation();
+	Direction.Normalize();
+
+	/** 
+	* Rotate the AIGuard to look at the new Direction 
+	* The yaw should only be rotated when the the AIGuard looks up
+	*/
+	FRotator NewLookAt = FRotationMatrix::MakeFromX(Direction).Rotator();
+	NewLookAt.Pitch = 0.0f;
+	NewLookAt.Roll = 0.0f;
+	SetActorRotation(NewLookAt);
+
+	/**
+	 *	clear Timer to prevent multiple timers running, in case of consecutive call
+	 *	Rotate the Guard back to its previous position after a certain amount of time
+	 */
+	GetWorldTimerManager().ClearTimer(TimerHandle_ResetOrientation);
+	GetWorldTimerManager().SetTimer(TimerHandle_ResetOrientation, this, &AFPSAIGuard::ResetOrientation, 3.0f);
+
+}
+
+/** Reposition the guard to its previous position */
+void AFPSAIGuard::ResetOrientation()
+{
+	SetActorRotation(OriginalRotation);
 }
 
 // Called every frame
