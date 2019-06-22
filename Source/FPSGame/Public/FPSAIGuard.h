@@ -27,7 +27,7 @@ protected:
 
 	/** Called When a pawn is seen */
 	UFUNCTION()
-	 void OnPawnSeen(APawn* SeenPawn);
+	void OnPawnSeen(APawn* SeenPawn);
 	/** Called a when a noise is heard */
 	UFUNCTION()
 	void OnNoiseHeard(APawn* Noiseinstigator, const FVector& Location, float Volume);
