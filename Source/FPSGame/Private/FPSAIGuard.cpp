@@ -5,6 +5,7 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/GameEngine.h"
 
+
 // Sets default values
 AFPSAIGuard::AFPSAIGuard()
 {
@@ -15,6 +16,9 @@ AFPSAIGuard::AFPSAIGuard()
 
 	/** Event that happens when we see a pawn */
 	PawnSensingComponent->OnSeePawn.AddDynamic(this, &AFPSAIGuard::OnPawnSeen);
+
+	/** Event that occurs when a noise is heard by the  Actor*/
+	PawnSensingComponent->OnHearNoise.AddDynamic(this, &AFPSAIGuard::OnNoiseHeard);
 
 }
 
@@ -36,7 +40,12 @@ void AFPSAIGuard::OnPawnSeen(APawn* SeenPawn)
 	FString message = TEXT("Saw Actor ") + SeenPawn->GetName();
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, message);
 
-	DrawDebugSphere(GetWorld(), SeenPawn->GetActorLocation(), 32.0f, 12, FColor::Yellow, false, 10.0f);
+	DrawDebugSphere(GetWorld(), SeenPawn->GetActorLocation(), 32.0f, 12, FColor::Red, false, 10.0f);
+}
+
+void AFPSAIGuard::OnNoiseHeard(APawn* Noiseinstigator, const FVector& Location, float Volume)
+{
+	DrawDebugSphere(GetWorld(), GetActorLocation(), 32.f, 12, FColor::Green, false, 10.f);
 }
 
 // Called every frame
