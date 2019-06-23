@@ -14,6 +14,9 @@ AFPSAIGuard::AFPSAIGuard()
 	PrimaryActorTick.bCanEverTick = true;
 
 	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComponent"));
+
+	/** Initialize the GuardState */
+	GuardState = EAIState::Idle;
 }
 
 // Called when the game starts or when spawned
@@ -47,11 +50,19 @@ void AFPSAIGuard::OnPawnSeen(APawn* SeenPawn)
 	{
 		GameMode->CompleteMission(SeenPawn, false);
 	}
+
+	SetGuardState(EAIState::Alerted);
 }
 
 /** Event that occurs when a noise is heard by the  Actor*/
 void AFPSAIGuard::OnNoiseHeard(APawn* Noiseinstigator, const FVector& Location, float Volume)
 {
+	/** OnNoiseheard, the player is meant to be suspicious not alerted, so if Guard's State is Alerted, return */
+	if (GuardState == EAIState::Alerted)
+	{
+		return;
+	}
+
 	DrawDebugSphere(GetWorld(), Location, 32.f, 12, FColor::Green, false, 10.f);
 
 	/** convert from vector to direction (The direction the AIGuard is meant to look at) */
@@ -74,12 +85,34 @@ void AFPSAIGuard::OnNoiseHeard(APawn* Noiseinstigator, const FVector& Location, 
 	GetWorldTimerManager().ClearTimer(TimerHandle_ResetOrientation);
 	GetWorldTimerManager().SetTimer(TimerHandle_ResetOrientation, this, &AFPSAIGuard::ResetOrientation, 3.0f);
 
+	/** Set the GuardState to suspicious when he hears a Noise */
+	SetGuardState(EAIState::Suspicious);
 }
 
 /** Reposition the guard to its previous position */
 void AFPSAIGuard::ResetOrientation()
 {
+	if (GuardState == EAIState::Alerted)
+	{
+		return;
+	}
 	SetActorRotation(OriginalRotation);
+
+	/** Set GuardState to idle once it returns to its original position */
+	SetGuardState(EAIState::Idle);
+}
+
+/** Set GuardState to NewState if its not the same with the NewState */
+void AFPSAIGuard::SetGuardState(EAIState NewState)
+{
+	if (GuardState == NewState)
+	{
+		return;
+	}
+
+	GuardState = NewState;
+
+	OnStateChanged(GuardState);
 }
 
 // Called every frame
