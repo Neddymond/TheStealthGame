@@ -4,6 +4,7 @@
 #include "Perception/PawnSensingComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/GameEngine.h"
+#include "FPSGameMode.h"
 
 
 // Sets default values
@@ -39,6 +40,13 @@ void AFPSAIGuard::OnPawnSeen(APawn* SeenPawn)
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, message);
 
 	DrawDebugSphere(GetWorld(), SeenPawn->GetActorLocation(), 32.0f, 12, FColor::Red, false, 10.0f);
+
+	/** Game over once we are seen by the Guard */
+	AFPSGameMode* GameMode = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
+	if (GameMode)
+	{
+		GameMode->CompleteMission(SeenPawn, false);
+	}
 }
 
 /** Event that occurs when a noise is heard by the  Actor*/

@@ -17,7 +17,7 @@ AFPSGameMode::AFPSGameMode()
 }
 
 /** Disables input for any player that completes the mission */
-void AFPSGameMode::CompleteMission(APawn* InstigatorPawn)
+void AFPSGameMode::CompleteMission(APawn* InstigatorPawn, bool bMissionSuccess)
 {
 	if (InstigatorPawn)
 	{
@@ -54,6 +54,6 @@ void AFPSGameMode::CompleteMission(APawn* InstigatorPawn)
 	}
 
 	/** Blueprint Implemented function */
-	OnMissionCompleted(InstigatorPawn);
+	OnMissionCompleted(InstigatorPawn, bMissionSuccess);
 }
 
